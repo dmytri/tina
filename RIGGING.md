@@ -17,7 +17,7 @@
 - step-usage: none
 - plank-inventory: none
 - typecheck: `npx tsc --noEmit`
-- lint: `npx gplint features/*.feature && npx biome check src/`
+- lint: `npx gplint features/*.feature && npx @biomejs/biome check src/`
 - conformance: none
 ## Perturbation
 - message: `PERTURBATION: consider current durable context; remove when fixed`
