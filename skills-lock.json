@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "boatswain": {
+      "source": "dmytri/shipshape",
+      "sourceType": "github",
+      "skillPath": "skills/boatswain/SKILL.md",
+      "computedHash": "0cc9c9296fb2e7a3f651715c64309c9f11c4b465082d483fa305be99e86019f6"
+    },
+    "captain": {
+      "source": "dmytri/shipshape",
+      "sourceType": "github",
+      "skillPath": "skills/captain/SKILL.md",
+      "computedHash": "392cc47951c058a7c561ba8bbf8a88a79c8c51048688c71bd1b5b72cda5f50db"
+    },
+    "crew": {
+      "source": "dmytri/shipshape",
+      "sourceType": "github",
+      "skillPath": "skills/crew/SKILL.md",
+      "computedHash": "11787f71f0043c74c973236df200586dd170e2d35e89e05dff0c3ccb763e0798"
+    },
+    "qm": {
+      "source": "dmytri/shipshape",
+      "sourceType": "github",
+      "skillPath": "skills/qm/SKILL.md",
+      "computedHash": "ef46301c9fda0222e73166b9e266f9b4d74856b4afe25b34ebc06a87712ba59d"
+    },
+    "shipshape": {
+      "source": "dmytri/shipshape",
+      "sourceType": "github",
+      "skillPath": "skills/shipshape/SKILL.md",
+      "computedHash": "533f56c0e5a8b5da0a8d55104d83e7b7235332c3ea70763a25358511cc9f17d6"
+    },
+    "shipwright": {
+      "source": "dmytri/shipshape",
+      "sourceType": "github",
+      "skillPath": "skills/shipwright/SKILL.md",
+      "computedHash": "28fda528e99cc6aceec0bf00ca5fc806c9f01aa76eec89eb77bc91b6a41c8d9c"
+    }
+  }
+}
