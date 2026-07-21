@@ -8,6 +8,7 @@ const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
 let assistantText = "";
+let latched = false;
 
 function loadConfig(): void {
 	for (const base of [
@@ -36,38 +37,30 @@ loadConfig();
  * @planks-provisional("tina-eval.feature:Pi extension blocks a tool call after assistant says \"try a different approach\"")
  */
 export default function (pi: ExtensionAPI) {
-	pi.on("message_start", async (event) => {
-		if (event.message.role === "assistant") {
-			assistantText = extractText(event.message);
-		}
-	});
-
 	pi.on("message_update", async (event) => {
-		if (event.message.role === "assistant") {
-			assistantText = extractText(event.message);
-		}
-	});
-
-	pi.on("message_end", async (event) => {
-		if (event.message.role === "assistant") {
-			assistantText = extractText(event.message);
+		if (event.message.role !== "assistant") return;
+		assistantText = extractText(event.message);
+		if (!latched && scanText(assistantText).matched) {
+			latched = true;
 		}
 	});
 
 	pi.on("input", async () => {
 		assistantText = "";
+		latched = false;
 	});
 
 	pi.on("tool_call", async () => {
-		if (assistantText && scanText(assistantText).matched) {
+		if (latched) {
 			return { block: true, reason: BLOCK_MESSAGE };
 		}
 	});
 
 	pi.registerCommand("tina", {
-		description: "Reset TINA latch",
+		description: "Reset TINA block",
 		handler: async () => {
 			assistantText = "";
+			latched = false;
 		},
 	});
 }

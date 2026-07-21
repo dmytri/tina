@@ -1,6 +1,11 @@
 import { scanText, setPhrases } from "@dk/tina-core";
 import type { Plugin } from "@opencode-ai/plugin";
 
+const BLOCK_MESSAGE =
+	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
+
+let blocked = false;
+
 function loadConfig(): void {
 	const raw = process.env.TINA_PHRASES;
 	if (!raw) return;
@@ -22,25 +27,18 @@ loadConfig();
  */
 export const TinaPlugin: Plugin = async () => {
 	return {
-		"tool.execute.before": async (input, output) => {
-			const tool = input.tool as string;
-			const args = output.args as Record<string, unknown>;
-			const textToScan = findTextInput(tool, args);
-			if (textToScan && scanText(textToScan).matched) {
-				throw new Error(
-					"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.",
-				);
+		"message.updated": async (input: unknown) => {
+			const msg = input as { role?: string; content?: string } | undefined;
+			if (msg?.role !== "assistant") return;
+			if (blocked) return;
+			if (typeof msg.content === "string" && scanText(msg.content).matched) {
+				blocked = true;
+			}
+		},
+		"tool.execute.before": async (_input, _output) => {
+			if (blocked) {
+				throw new Error(BLOCK_MESSAGE);
 			}
 		},
 	};
 };
-
-function findTextInput(
-	tool: string,
-	args: Record<string, unknown>,
-): string | null {
-	if (typeof args.command === "string") return args.command;
-	if (typeof args.content === "string") return args.content;
-	if (typeof args.text === "string") return args.text;
-	return null;
-}

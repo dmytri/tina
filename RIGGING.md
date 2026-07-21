@@ -19,12 +19,12 @@ Procedure lives in the skills. Every role reads this on open.
 
 ## Commands
 
-- discover: `npx cucumber-js --dry-run --import tsx --import "features/step_definitions/**/*.ts" --tags "not @captain and not @shipwright"`
-- focused: `ref="{scenario}"; npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" "${ref%%:*}" --name "^${ref#*:}$" --tags "not @captain and not @shipwright"`
-- broad: `npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "not @captain and not @shipwright"`
-- broad-eval: `set -a; . .env; set +a; OPENROUTER_API_KEY="$HARNESS_OPENROUTER_API_KEY" npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "@eval and not @captain and not @shipwright"`
-- coverage: `npx c8 npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "not @captain and not @shipwright"`
-- step-usage: `npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --format usage-json --tags "not @captain and not @shipwright"`
+- discover: `npx cucumber-js --dry-run --import tsx --import "features/step_definitions/**/*.ts" --tags "not @eval and not @captain and not @shipwright"`
+- focused: `ref="{scenario}"; npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" "${ref%%:*}" --name "^${ref#*:}$" --tags "not @eval and not @captain and not @shipwright"`
+- broad: `npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "not @eval and not @captain and not @shipwright"`
+- broad-eval: `set -a; . .env; set +a; OPENROUTER_API_KEY="$HARNESS_OPENROUTER_API_KEY" npx cucumber-js --import "features/step_definitions/tina-eval.js" --tags "@eval and not @captain and not @shipwright"`
+- coverage: `npx c8 npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "not @eval and not @captain and not @shipwright"`
+- step-usage: `npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --format usage-json --tags "not @eval and not @captain and not @shipwright"`
 - plank-inventory: `grep -rn '@planks\|@planks-provisional' packages/ --include='*.ts'`
 - typecheck: `npx tsc --noEmit`
 - lint: `npx gplint features/*.feature && npx @biomejs/biome check packages/ scripts/ features/`

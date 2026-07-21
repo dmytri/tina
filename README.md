@@ -1,6 +1,8 @@
 # TINA — There Is No Alternative
 
-Pre-execution tool-call interceptor. Scans assistant text for disallowed phrases ("try a different approach", "try an alternative approach", "try an alternate approach") and blocks subsequent tool calls when a match is detected.
+Pre-execution tool-call interceptor. Scans assistant text for disallowed phrases ("try a different approach", "try an alternative approach", "try an alternate approach") and blocks subsequent tool calls when a match is detected. Once blocked, the session stays blocked until the user sends a new message or `/tina reset`.
+
+## Setup
 
 ## Setup
 
@@ -47,7 +49,7 @@ npx plugins add ./plugins/agent-tina
 
 | Package | Registry | Channel |
 |---|---|---|
-| `@dk/tina-core` | npm | Shared scan/latch logic |
+| `@dk/tina-core` | npm | Phrase scanning logic |
 | `@dk/pi-tina` | npm | Pi extension |
 | `@dk/opencode-tina` | npm | OpenCode plugin |
 | `plugins/agent-tina/` | GitHub | Open Plugin (Claude, Cursor, Codex, Copilot) |

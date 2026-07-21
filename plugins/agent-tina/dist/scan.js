@@ -43,7 +43,7 @@ process.stdin.on("end", () => {
 			for (const phrase of phrases) {
 				if (lower.includes(phrase.toLowerCase())) {
 					console.error(`TINA blocked: phrase "${phrase}" detected`);
-					process.exit(1);
+					process.exit(2);
 				}
 			}
 		}
