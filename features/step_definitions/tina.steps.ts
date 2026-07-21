@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import { getPhrases, scanText } from "@dk/tina-core";
 
+const BLOCK_MESSAGE = "TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
+
 let testLatched = false;
+let testBlockMessage: string | null = null;
 
 Given("TINA is installed as a pre-execution interceptor", () => {
 	(typeof scanText === "function").valueOf();
@@ -31,10 +34,12 @@ Given("assistant text is empty", function () {
 
 Given("the session is unlatched", () => {
 	testLatched = false;
+	testBlockMessage = null;
 });
 
 Given("the session is latched", () => {
 	testLatched = true;
+	testBlockMessage = BLOCK_MESSAGE;
 });
 
 When("TINA scans the text", function () {
@@ -44,24 +49,30 @@ When("TINA scans the text", function () {
 	ctx.scanResult = result;
 	if (result.matched) {
 		testLatched = true;
+		testBlockMessage = BLOCK_MESSAGE;
+	} else {
+		testBlockMessage = null;
 	}
 });
 
 When("TINA detects a match", () => {
 	testLatched = true;
+	testBlockMessage = BLOCK_MESSAGE;
 });
 
 When("TINA scans text that does not match", () => {
-	// latch unchanged
+	// latch unchanged, message unchanged
 });
 
 When("a new user message arrives", () => {
 	testLatched = false;
+	testBlockMessage = null;
 });
 
 When("the user sends {string}", (command: string) => {
 	if (command === "/tina reset") {
 		testLatched = false;
+		testBlockMessage = null;
 	}
 });
 
@@ -82,7 +93,8 @@ Then("the session latches", () => {
 Then(
 	"every subsequent tool call is rejected with the message",
 	(expectedMessage: string) => {
-		assert.ok(testLatched);
+		assert.ok(testLatched, "session should be latched");
+		assert.equal(testBlockMessage, expectedMessage, "rejection message mismatch");
 	},
 );
 
