@@ -1,0 +1,10 @@
+{
+  "name": "agent-tina",
+  "version": "0.2.0",
+  "description": "TINA — There Is No Alternative. Pre-execution tool-call interceptor. Blocks tool calls when disallowed phrases are detected.",
+  "author": {
+    "name": "dmytri"
+  },
+  "repository": "https://github.com/dmytri/tina",
+  "license": "MIT"
+}

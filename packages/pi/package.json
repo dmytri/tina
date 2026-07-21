@@ -1,0 +1,22 @@
+{
+	"name": "@dk/pi-tina",
+	"version": "0.2.0",
+	"description": "TINA — Pi adapter. Pre-execution tool-call interceptor for Pi.",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"pi-package"
+	],
+	"scripts": {
+		"build": "tsc",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@dk/tina-core": "*"
+	},
+	"license": "MIT"
+}

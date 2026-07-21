@@ -1,22 +1,22 @@
-import { Given, When, Then } from "@cucumber/cucumber";
 import assert from "node:assert/strict";
+import { Given, Then, When } from "@cucumber/cucumber";
 import {
+	getPhrases,
+	isLatched,
 	scanText,
 	latch as tinaLatch,
-	unlatch as tinaUnlatch,
 	reset as tinaReset,
-	isLatched,
-	getPhrases,
-} from "../../src/core/index.ts";
+	unlatch as tinaUnlatch,
+} from "@dk/tina-core";
 
-Given("TINA is installed as a pre-execution interceptor", function () {
+Given("TINA is installed as a pre-execution interceptor", () => {
 	// Module is importable — that proves installation for QM verification
 	(typeof scanText === "function").valueOf();
 });
 
 Given(
 	"the phrase list contains {string}, {string}, and {string}",
-	function (phrase1: string, phrase2: string, phrase3: string) {
+	(phrase1: string, phrase2: string, phrase3: string) => {
 		const phrases = getPhrases();
 		assert.ok(phrases.includes(phrase1));
 		assert.ok(phrases.includes(phrase2));
@@ -36,11 +36,11 @@ Given("assistant text is empty", function () {
 	(this as Record<string, unknown>).assistantText = "";
 });
 
-Given("the session is unlatched", function () {
+Given("the session is unlatched", () => {
 	tinaUnlatch();
 });
 
-Given("the session is latched", function () {
+Given("the session is latched", () => {
 	tinaLatch();
 });
 
@@ -50,19 +50,19 @@ When("TINA scans the text", function () {
 	ctx.result = scanText(text);
 });
 
-When("TINA detects a match", function () {
+When("TINA detects a match", () => {
 	tinaLatch();
 });
 
-When("TINA scans text that does not match", function () {
+When("TINA scans text that does not match", () => {
 	// latch state remains unchanged
 });
 
-When("a new user message arrives", function () {
+When("a new user message arrives", () => {
 	tinaUnlatch();
 });
 
-When("the user sends {string}", function (command: string) {
+When("the user sends {string}", (command: string) => {
 	if (command === "/tina reset") {
 		tinaReset();
 	}
@@ -80,29 +80,29 @@ Then("TINA reports no match", function () {
 	assert.equal(result.matched, false);
 });
 
-Then("the session latches", function () {
+Then("the session latches", () => {
 	assert.ok(isLatched());
 });
 
 Then(
 	"every subsequent tool call is rejected with the message",
-	function (expectedMessage: string) {
+	(expectedMessage: string) => {
 		assert.ok(isLatched());
 	},
 );
 
-Then("the session remains latched", function () {
+Then("the session remains latched", () => {
 	assert.ok(isLatched());
 });
 
-Then("tool calls continue to be rejected", function () {
+Then("tool calls continue to be rejected", () => {
 	assert.ok(isLatched());
 });
 
-Then("the session unlatches", function () {
+Then("the session unlatches", () => {
 	assert.equal(isLatched(), false);
 });
 
-Then("tool calls are permitted again", function () {
+Then("tool calls are permitted again", () => {
 	assert.equal(isLatched(), false);
 });

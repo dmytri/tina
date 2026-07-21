@@ -1,0 +1,16 @@
+{
+	"name": "@dk/tina-core",
+	"version": "0.2.0",
+	"description": "TINA — There Is No Alternative. Core scanning and latching logic.",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"typecheck": "tsc --noEmit"
+	},
+	"license": "MIT"
+}

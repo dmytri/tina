@@ -5,22 +5,22 @@ Feature: TINA — There Is No Alternative
 
   Background:
     Given TINA is installed as a pre-execution interceptor
-    And the phrase list contains "alternative approach", "alternate approach", and "alternatively"
+    And the phrase list contains "try a different approach", "try an alternative approach", and "try an alternate approach"
 
   Rule: Phrase detection
 
   Scenario: Exact phrase match triggers a latch
-    Given assistant text contains the phrase "alternative approach"
+    Given assistant text contains the phrase "try an alternative approach"
     When TINA scans the text
     Then TINA reports a match
 
   Scenario: Inflected variant triggers a latch
-    Given assistant text contains the phrase "alternate approach"
+    Given assistant text contains the phrase "try an alternate approach"
     When TINA scans the text
     Then TINA reports a match
 
-  Scenario: Adverb variant triggers a latch
-    Given assistant text contains the word "alternatively"
+  Scenario: Another inflected variant triggers a latch
+    Given assistant text contains the phrase "try a different approach"
     When TINA scans the text
     Then TINA reports a match
 

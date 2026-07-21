@@ -1,34 +1,49 @@
 # Rigging
+
+Project tooling values for Shipshape roles. Values only, not procedure.
+Procedure lives in the skills. Every role reads this on open.
+
 ## Stack
+
 - language: TypeScript
 - runtime: node
-- packageManager: npm
+- packageManager: npm (workspaces)
+
 ## Directories
+
 - implementation: src
 - specs: features
-- verification: none
+- verification: features/step_definitions
 - assets: assets
 - scantlings: none
+
 ## Commands
-- discover: none
-- focused: `ref="{scenario}"; npx cucumber-js "${ref%%:*}" --name "^${ref#*:}$" --tags "not @captain and not @shipwright"`
-- broad: `npx cucumber-js --tags "not @captain and not @shipwright"`
-- coverage: `npx c8 npx cucumber-js --tags "not @captain and not @shipwright"`
-- step-usage: none
-- plank-inventory: none
+
+- discover: `npx cucumber-js --dry-run --import tsx --import "features/step_definitions/**/*.ts" --tags "not @captain and not @shipwright"`
+- focused: `ref="{scenario}"; npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" "${ref%%:*}" --name "^${ref#*:}$" --tags "not @captain and not @shipwright"`
+- broad: `npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "not @captain and not @shipwright"`
+- coverage: `npx c8 npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --tags "not @captain and not @shipwright"`
+- step-usage: `npx cucumber-js --import tsx --import "features/step_definitions/**/*.ts" --format usage-json --tags "not @captain and not @shipwright"`
+- plank-inventory: `grep -rn '@planks\|@planks-provisional' src/ --include='*.ts'`
 - typecheck: `npx tsc --noEmit`
 - lint: `npx gplint features/*.feature && npx @biomejs/biome check src/`
 - conformance: none
+
 ## Perturbation
+
 - message: `PERTURBATION: consider current durable context; remove when fixed`
 - perturb: `throw new Error("PERTURBATION: consider current durable context; remove when fixed");`
+
 ## Tiers
-- default: none
+
+- default: @logic
 - sandbox: none
 - policy: none
-- weather: none
-- runrecord: none
+- weather: coverage/weather.json
+- runrecord: coverage/runrecord.ndjson
+
 ## Dependencies
+
 - policy: locked
 - dependency: @cucumber/cucumber
 - dependency: typescript
@@ -36,5 +51,8 @@
 - dependency: c8
 - dependency: gplint
 - dependency: tsx
+
 ## Outbound
-- outbound: none
+
+- outbound: `npm -w packages/core run build && npm -w packages/pi run build && npm -w packages/opencode run build`
+- outbound: tsx scripts/build-plugins.ts

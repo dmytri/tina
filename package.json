@@ -1,46 +1,29 @@
 {
-  "name": "@exedev/tina",
-  "version": "0.1.0",
-  "description": "TINA — There Is No Alternative. Pre-execution tool-call interceptor for Pi and OpenCode.",
+  "name": "tina-monorepo",
+  "private": true,
   "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/core/index.js",
-      "types": "./dist/core/index.d.ts"
-    },
-    "./pi": {
-      "import": "./dist/pi/index.js",
-      "types": "./dist/pi/index.d.ts"
-    },
-    "./opencode": {
-      "import": "./dist/opencode/index.js",
-      "types": "./dist/opencode/index.d.ts"
-    }
-  },
-  "files": [
-    "dist"
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "cucumber-js",
-    "coverage": "c8 cucumber-js",
-    "lint": "biome check src/",
-    "lint:fix": "biome check --write src/",
+    "build": "npm -w packages/core run build && npm -w packages/pi run build && npm -w packages/opencode run build",
+    "build:plugins": "tsx scripts/build-plugins.ts",
+    "test": "cucumber-js --import tsx --import 'features/step_definitions/**/*.ts' --tags 'not @captain and not @shipwright'",
+    "coverage": "c8 cucumber-js --import tsx --import 'features/step_definitions/**/*.ts' --tags 'not @captain and not @shipwright'",
+    "lint": "biome check packages/ scripts/ features/",
+    "lint:fix": "biome check --write packages/ scripts/ features/",
+    "changeset": "changeset",
     "typecheck": "tsc --noEmit",
-    "prepare": "tsc"
+    "prepare": "npm run build"
   },
-  "keywords": [
-    "tina",
-    "alternative",
-    "pi",
-    "opencode",
-    "interceptor"
-  ],
-  "license": "MIT",
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.28.1",
     "@cucumber/cucumber": "^13.2.0",
     "c8": "^12.0.0",
     "gplint": "^2.5.2",
-    "tsx": "^4.23.1"
-  }
+    "tsx": "^4.23.1",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT"
 }

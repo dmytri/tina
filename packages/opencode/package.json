@@ -1,0 +1,19 @@
+{
+	"name": "@dk/opencode-tina",
+	"version": "0.2.0",
+	"description": "TINA — OpenCode adapter. Pre-execution tool-call interceptor for OpenCode.",
+	"type": "module",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@dk/tina-core": "*"
+	},
+	"license": "MIT"
+}

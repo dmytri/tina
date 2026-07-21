@@ -1,0 +1,12 @@
+{
+  "name": "@dk/tina",
+  "owner": { "name": "dk" },
+  "plugins": [
+    {
+      "name": "agent-tina",
+      "source": "./plugins/agent-tina/",
+      "description": "TINA — There Is No Alternative. Pre-execution tool-call interceptor. Blocks tool calls when disallowed phrases are detected.",
+      "version": "0.1.0"
+    }
+  ]
+}
