@@ -29,25 +29,18 @@ Add to `opencode.json`:
 }
 ```
 
-### Claude Code
+### Claude Code / Cursor / Codex / Copilot
 
 ```bash
-claude plugin install agent-tina@claude-community
+npx plugins add dmytri/tina
 ```
 
-Once accepted into the community marketplace. Or sideload directly:
+This installs the `agent-tina` plugin from the `@dk/tina` marketplace into your tool's plugin cache. The plugin registers a `PreToolUse` hook that intercepts tool calls.
+
+For development, sideload directly:
 
 ```bash
-claude --plugin-dir ./plugins/agent-tina
-```
-
-### Cursor / Codex / Copilot
-
-Install the `agent-tina` plugin from the `@dk/tina` marketplace. This repo hosts an Open Plugins–compatible plugin directory at `plugins/agent-tina/` with a `PreToolUse` hook.
-
-```bash
-git clone https://github.com/dmytri/tina
-cursor --plugin-dir ./plugins/agent-tina
+npx plugins add ./plugins/agent-tina
 ```
 
 ## Packages

@@ -45,18 +45,16 @@ Add to `opencode.json`:
 TINA_PHRASES='["try a different approach","try an alternative approach"]'
 ```
 
-### Claude Code
-
-Once accepted into the community marketplace:
+### Claude Code / Cursor / Codex / Copilot
 
 ```bash
-claude plugin install agent-tina@claude-community
+npx plugins add dmytri/tina
 ```
 
-Or sideload:
+Or sideload during development:
 
 ```bash
-claude --plugin-dir ./plugins/agent-tina
+npx plugins add ./plugins/agent-tina
 ```
 
 **Configure phrases:** create a `.tina.json` in your project root:
@@ -68,15 +66,6 @@ claude --plugin-dir ./plugins/agent-tina
 ```
 
 Or set `TINA_PHRASES` environment variable.
-
-### Cursor / Codex / Copilot
-
-```bash
-git clone https://github.com/dmytri/tina
-cursor --plugin-dir ./plugins/agent-tina
-```
-
-**Configure phrases:** same as Claude Code — `.tina.json` or `TINA_PHRASES`.
 
 ## Verification
 
