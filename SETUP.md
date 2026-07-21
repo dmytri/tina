@@ -51,7 +51,9 @@ TINA_PHRASES='["try a different approach","try an alternative approach"]'
 npx plugins add dmytri/tina
 ```
 
-Or sideload during development:
+Auto-detects installed tools (Claude Code, Codex, Copilot, etc.) and installs the plugin to each one. Registers a marketplace for auto-updates.
+
+For development:
 
 ```bash
 npx plugins add ./plugins/agent-tina
