@@ -30,4 +30,6 @@ for (const plugin of marketplace.plugins) {
 }
 writeFileSync(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`);
 
-console.log(`Synced plugins/agent-tina and marketplace version to ${coreVersion}`);
+console.log(
+	`Synced plugins/agent-tina and marketplace version to ${coreVersion}`,
+);

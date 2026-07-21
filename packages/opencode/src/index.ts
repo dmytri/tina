@@ -16,6 +16,10 @@ function loadConfig(): void {
 
 loadConfig();
 
+/**
+ * OpenCode plugin factory. Intercepts tool execution and blocks on phrase match.
+ * @planks-provisional("tina-opencode.feature:OpenCode plugin blocks tool calls after assistant says a disallowed phrase")
+ */
 export const TinaPlugin: Plugin = async () => {
 	return {
 		"tool.execute.before": async (input, output) => {
@@ -23,13 +27,18 @@ export const TinaPlugin: Plugin = async () => {
 			const args = output.args as Record<string, unknown>;
 			const textToScan = findTextInput(tool, args);
 			if (textToScan && scanText(textToScan).matched) {
-				throw new Error("TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.");
+				throw new Error(
+					"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.",
+				);
 			}
 		},
 	};
 };
 
-function findTextInput(tool: string, args: Record<string, unknown>): string | null {
+function findTextInput(
+	tool: string,
+	args: Record<string, unknown>,
+): string | null {
 	if (typeof args.command === "string") return args.command;
 	if (typeof args.content === "string") return args.content;
 	if (typeof args.text === "string") return args.text;

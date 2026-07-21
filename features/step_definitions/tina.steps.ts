@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import { getPhrases, scanText } from "@dk/tina-core";
 
-const BLOCK_MESSAGE = "TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
+const BLOCK_MESSAGE =
+	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
 let testLatched = false;
 let testBlockMessage: string | null = null;
@@ -94,7 +95,11 @@ Then(
 	"every subsequent tool call is rejected with the message",
 	(expectedMessage: string) => {
 		assert.ok(testLatched, "session should be latched");
-		assert.equal(testBlockMessage, expectedMessage, "rejection message mismatch");
+		assert.equal(
+			testBlockMessage,
+			expectedMessage,
+			"rejection message mismatch",
+		);
 	},
 );
 

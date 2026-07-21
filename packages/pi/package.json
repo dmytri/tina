@@ -5,12 +5,8 @@
 	"type": "module",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"pi-package"
-	],
+	"files": ["dist"],
+	"keywords": ["pi-package"],
 	"scripts": {
 		"build": "tsc",
 		"typecheck": "tsc --noEmit"
@@ -22,9 +18,7 @@
 		"@earendil-works/pi-coding-agent": "^0.81.1"
 	},
 	"pi": {
-		"extensions": [
-			"./dist/index.js"
-		]
+		"extensions": ["./dist/index.js"]
 	},
 	"license": "MIT",
 	"devDependencies": {
