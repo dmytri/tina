@@ -1,5 +1,13 @@
 # @dk/opencode-tina
 
+## 0.3.1
+
+### Patch Changes
+
+- QM: step definitions for promoted scenarios, plank annotation updates
+- Updated dependencies
+  - @dk/tina-core@0.3.1
+
 ## 0.3.0
 
 ### Minor Changes

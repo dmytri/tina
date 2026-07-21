@@ -1,5 +1,11 @@
 # @dk/tina-core
 
+## 0.3.1
+
+### Patch Changes
+
+- QM: step definitions for promoted scenarios, plank annotation updates
+
 ## 0.3.0
 
 ### Minor Changes
