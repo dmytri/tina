@@ -1,4 +1,5 @@
-import { isLatched, latch, reset, scanText, setPhrases } from "@dk/tina-core";
+import { scanText, setPhrases } from "@dk/tina-core";
+import type { Plugin } from "@opencode-ai/plugin";
 
 function loadConfig(): void {
 	const raw = process.env.TINA_PHRASES;
@@ -9,30 +10,28 @@ function loadConfig(): void {
 			setPhrases(phrases.map(String));
 		}
 	} catch {
-		// ignore invalid env
+		// ignore
 	}
 }
 
 loadConfig();
 
-export function opencodeToolBeforeHook(
-	tool: string,
-	args: Record<string, unknown>,
-): void {
-	if (isLatched()) {
-		throw new Error("Blocked by TINA");
-	}
-	if (tool === "bash" && typeof args.command === "string") {
-		const result = scanText(args.command);
-		if (result.matched) {
-			latch();
-			throw new Error(
-				`Blocked by TINA: phrase "${result.matchedPhrase}" detected`,
-			);
-		}
-	}
-}
+export const TinaPlugin: Plugin = async () => {
+	return {
+		"tool.execute.before": async (input, output) => {
+			const tool = input.tool as string;
+			const args = output.args as Record<string, unknown>;
+			const textToScan = findTextInput(tool, args);
+			if (textToScan && scanText(textToScan).matched) {
+				throw new Error("TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.");
+			}
+		},
+	};
+};
 
-export function tinaReset(): void {
-	reset();
+function findTextInput(tool: string, args: Record<string, unknown>): string | null {
+	if (typeof args.command === "string") return args.command;
+	if (typeof args.content === "string") return args.content;
+	if (typeof args.text === "string") return args.text;
+	return null;
 }

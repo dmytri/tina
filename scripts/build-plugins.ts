@@ -1,4 +1,4 @@
-import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,4 +21,13 @@ writeFileSync(pluginManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 const claudeManifestPath = resolve(PLUGIN_DIR, ".claude-plugin", "plugin.json");
 writeFileSync(claudeManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
-console.log(`Synced plugins/agent-tina version to ${coreVersion}`);
+const marketplacePath = resolve(ROOT, "marketplace.json");
+const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+for (const plugin of marketplace.plugins) {
+	if (plugin.name === "agent-tina") {
+		plugin.version = coreVersion;
+	}
+}
+writeFileSync(marketplacePath, `${JSON.stringify(marketplace, null, 2)}\n`);
+
+console.log(`Synced plugins/agent-tina and marketplace version to ${coreVersion}`);

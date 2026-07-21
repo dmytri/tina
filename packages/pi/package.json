@@ -18,5 +18,17 @@
 	"dependencies": {
 		"@dk/tina-core": "*"
 	},
-	"license": "MIT"
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": "^0.81.1"
+	},
+	"pi": {
+		"extensions": [
+			"./dist/index.js"
+		]
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"@earendil-works/pi-coding-agent": "^0.81.1",
+		"@types/node": "^26.1.1"
+	}
 }

@@ -15,5 +15,9 @@
 	"dependencies": {
 		"@dk/tina-core": "*"
 	},
-	"license": "MIT"
+	"license": "MIT",
+	"devDependencies": {
+		"@opencode-ai/plugin": "^1.18.4",
+		"@types/node": "^26.1.1"
+	}
 }

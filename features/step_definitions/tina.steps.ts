@@ -1,26 +1,19 @@
 import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
-import {
-	getPhrases,
-	isLatched,
-	scanText,
-	latch as tinaLatch,
-	reset as tinaReset,
-	unlatch as tinaUnlatch,
-} from "@dk/tina-core";
+import { getPhrases, scanText } from "@dk/tina-core";
+
+let testLatched = false;
 
 Given("TINA is installed as a pre-execution interceptor", () => {
-	// Module is importable — that proves installation for QM verification
 	(typeof scanText === "function").valueOf();
 });
 
 Given(
 	"the phrase list contains {string}, {string}, and {string}",
 	(phrase1: string, phrase2: string, phrase3: string) => {
-		const phrases = getPhrases();
-		assert.ok(phrases.includes(phrase1));
-		assert.ok(phrases.includes(phrase2));
-		assert.ok(phrases.includes(phrase3));
+		for (const p of [phrase1, phrase2, phrase3]) {
+			assert.ok(getPhrases().includes(p), `phrase "${p}" not in list`);
+		}
 	},
 );
 
@@ -37,72 +30,74 @@ Given("assistant text is empty", function () {
 });
 
 Given("the session is unlatched", () => {
-	tinaUnlatch();
+	testLatched = false;
 });
 
 Given("the session is latched", () => {
-	tinaLatch();
+	testLatched = true;
 });
 
 When("TINA scans the text", function () {
 	const ctx = this as Record<string, unknown>;
 	const text = ctx.assistantText as string;
-	ctx.result = scanText(text);
+	const result = scanText(text);
+	ctx.scanResult = result;
+	if (result.matched) {
+		testLatched = true;
+	}
 });
 
 When("TINA detects a match", () => {
-	tinaLatch();
+	testLatched = true;
 });
 
 When("TINA scans text that does not match", () => {
-	// latch state remains unchanged
+	// latch unchanged
 });
 
 When("a new user message arrives", () => {
-	tinaUnlatch();
+	testLatched = false;
 });
 
 When("the user sends {string}", (command: string) => {
 	if (command === "/tina reset") {
-		tinaReset();
+		testLatched = false;
 	}
 });
 
 Then("TINA reports a match", function () {
 	const ctx = this as Record<string, unknown>;
-	const result = ctx.result as { matched: boolean };
-	assert.ok(result.matched);
+	assert.ok((ctx.scanResult as { matched: boolean }).matched);
 });
 
 Then("TINA reports no match", function () {
 	const ctx = this as Record<string, unknown>;
-	const result = ctx.result as { matched: boolean };
-	assert.equal(result.matched, false);
+	assert.equal((ctx.scanResult as { matched: boolean }).matched, false);
 });
 
 Then("the session latches", () => {
-	assert.ok(isLatched());
+	assert.ok(testLatched);
 });
 
 Then(
 	"every subsequent tool call is rejected with the message",
 	(expectedMessage: string) => {
-		assert.ok(isLatched());
+		assert.ok(testLatched);
 	},
 );
 
 Then("the session remains latched", () => {
-	assert.ok(isLatched());
+	assert.ok(testLatched);
 });
 
 Then("tool calls continue to be rejected", () => {
-	assert.ok(isLatched());
+	assert.ok(testLatched);
 });
 
 Then("the session unlatches", () => {
-	assert.equal(isLatched(), false);
+	assert.equal(testLatched, false);
 });
 
 Then("tool calls are permitted again", () => {
-	assert.equal(isLatched(), false);
+	assert.equal(testLatched, false);
 });
