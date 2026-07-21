@@ -1,6 +1,6 @@
 # TINA — There Is No Alternative
 
-Pre-execution tool-call interceptor. Scans assistant text for disallowed phrases ("alternative approach", "alternate approach", "alternatively") and blocks subsequent tool calls when a match is detected.
+Pre-execution tool-call interceptor. Scans assistant text for disallowed phrases ("try a different approach", "try an alternative approach", "try an alternate approach") and blocks subsequent tool calls when a match is detected.
 
 ## Setup
 
