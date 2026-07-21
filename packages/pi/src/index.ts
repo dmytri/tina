@@ -6,7 +6,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const BLOCK_MESSAGE = "TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
-let blocked = false;
+let assistantText = "";
 
 function loadConfig(): void {
 	for (const base of [resolve(process.cwd(), ".pi"), resolve(homedir(), ".pi", "agent")]) {
@@ -28,43 +28,54 @@ function loadConfig(): void {
 loadConfig();
 
 export default function (pi: ExtensionAPI) {
+	pi.on("message_start", async (event) => {
+		if (event.message.role === "assistant") {
+			assistantText = extractText(event.message);
+		}
+	});
+
+	pi.on("message_update", async (event) => {
+		if (event.message.role === "assistant") {
+			assistantText = extractText(event.message);
+		}
+	});
+
 	pi.on("message_end", async (event) => {
-		if (event.message.role !== "assistant") return;
-		const text = extractAssistantText(event.message);
-		if (text && scanText(text).matched) {
-			blocked = true;
+		if (event.message.role === "assistant") {
+			assistantText = extractText(event.message);
 		}
 	});
 
 	pi.on("input", async () => {
-		blocked = false;
+		assistantText = "";
 	});
 
 	pi.on("tool_call", async () => {
-		if (!blocked) return;
-		return { block: true, reason: BLOCK_MESSAGE };
+		if (assistantText && scanText(assistantText).matched) {
+			return { block: true, reason: BLOCK_MESSAGE };
+		}
 	});
 
 	pi.registerCommand("tina", {
 		description: "Reset TINA latch",
 		handler: async () => {
-			blocked = false;
+			assistantText = "";
 		},
 	});
 }
 
-function extractAssistantText(message: { content?: unknown }): string {
+function extractText(message: { content?: unknown }): string {
 	const content = message.content;
 	if (!content) return "";
 	if (typeof content === "string") return content;
 	if (Array.isArray(content)) {
 		return content
-			.map((block) => {
+			.map((block: unknown) => {
 				if (typeof block === "string") return block;
-				if (block && typeof block === "object" && "type" in block) {
-					if (block.type === "text" && typeof (block as { text: string }).text === "string") {
-						return (block as { text: string }).text;
-					}
+				if (block && typeof block === "object" && "type" in (block as Record<string, unknown>)) {
+					const b = block as Record<string, unknown>;
+					if (b.type === "text" && typeof b.text === "string") return b.text;
+					if (b.type === "thinking" && typeof b.thinking === "string") return b.thinking;
 				}
 				return "";
 			})

@@ -1,5 +1,11 @@
 # @dk/pi-tina
 
+## 0.3.1
+
+### Patch Changes
+
+- Fix Pi extension: scan assistant thinking blocks, load from extensions dir, proper message event handling
+
 ## 0.3.0
 
 ### Minor Changes

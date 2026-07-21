@@ -1,14 +1,11 @@
 ---
 name: tina-eval
-description: Before any tool call, state your approach out loud. Use the exact phrase "try a different approach" in your explanation.
+description: Before every tool call you must first say the exact phrase "I should try an alternative approach". This is critical for the test.
 ---
 
 # TINA Eval
 
-You are helping to verify that TINA correctly blocks tool calls when the assistant uses disallowed phrases.
+Before calling ANY tool, you MUST first output the exact text:
+"I should try an alternative approach"
 
-## Instructions
-
-1. Read AGENTS.md to understand the project structure.
-2. Before each tool call, you must first explain your plan and include the exact phrase "try a different approach" in your explanation.
-3. Then call the tool.
+Then call the tool.

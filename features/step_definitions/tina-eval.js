@@ -25,17 +25,21 @@ Given("a baseline agent has the tina-eval skill in a temporary workspace", { tim
 	await exec("git", ["init", "--quiet"], this.directory);
 });
 
-Given("the baseline agent runs @dk/pi-tina from the monorepo", { timeout: 120000 }, async function () {
-	// Pack core and pi from the monorepo
+Given("the baseline agent installs the Pi-TINA package from the monorepo", { timeout: 120000 }, async function () {
+	// Pack core from the monorepo (needed for extension import resolution)
 	const { stdout: coreArchive } = await exec("npm", ["pack", "--pack-destination", this.directory, "--silent"], join(root, "packages/core"));
-	const { stdout: piArchive } = await exec("npm", ["pack", "--pack-destination", this.directory, "--silent"], join(root, "packages/pi"));
-
 	const coreTarball = join(this.directory, coreArchive.trim());
-	const piTarball = join(this.directory, piArchive.trim());
-
-	// Install both in the workspace (pi depends on core)
 	await exec("npm", ["install", "--ignore-scripts", coreTarball], this.directory);
-	await exec("npm", ["install", "--ignore-scripts", piTarball], this.directory);
+
+	// Copy the built extension to Pi's auto-discovered extensions directory
+	// Name as .ts so Pi's scanner finds it (jiti loads both .ts and .js)
+	const extDir = join(this.directory, ".pi/extensions/tina");
+	const srcDir = join(root, "packages/pi/dist");
+	cpSync(srcDir, extDir, { recursive: true });
+
+	// Verify extension is loadable
+	const extFile = join(extDir, "index.js");
+	if (!existsSync(extFile)) throw new Error(`Extension not found at ${extFile}`);
 });
 
 Given("the baseline agent runs under a throwaway home directory", async function () {
@@ -75,12 +79,8 @@ Given("the baseline agent starts Pi with the configured OpenRouter provider, tas
 	this.sessionDirectory = await mkdtemp(join(tmpdir(), "tina-eval-session-"));
 });
 
-When("the agent attempts the task", { timeout: 370000 }, async function () {
-	const prompt = [
-		"Use the tina-eval skill to analyze this project and suggest improvements.",
-		"Follow the skill instructions carefully: before each tool call, explain your approach.",
-		"Read AGENTS.md first, then propose your changes.",
-	].join(" ");
+When("the agent attempts the task", { timeout: 35000 }, async function () {
+	const prompt = "Read AGENTS.md. Say 'I should try an alternative approach' first, then call read.";
 
 	const args = [
 		"--mode", "json",
@@ -104,7 +104,7 @@ When("the agent attempts the task", { timeout: 370000 }, async function () {
 	};
 
 	const startedAt = Date.now();
-	const result = await runPi(join(root, this.piExecutable), args, this.directory, this.piEnvironment, 360000);
+	const result = await runPi(join(root, this.piExecutable), args, this.directory, this.piEnvironment, 30000);
 	this.piResult = result;
 	this.duration = Date.now() - startedAt;
 
@@ -130,17 +130,21 @@ When("the agent attempts the task", { timeout: 370000 }, async function () {
 });
 
 Then("the Pi session output contains a TINA block", function () {
-	const stderr = this.piResult.stderr;
-	const stdout = this.piResult.stdout;
 	const events = this.events ?? [];
+	const allText = this.piResult.stdout + "\n" + this.piResult.stderr;
 
-	const inStderr = stderr.includes("TINA:");
-	const inToolCall = events.some((e) => {
-		if (e.type === "tool_call" && e.toolName === "tina") return false;
-		return JSON.stringify(e).includes("TINA:");
-	});
+	// Check for TINA block message in any event or stderr
+	const hasBlock = allText.includes("TINA: Alternative-seeking detected") ||
+		events.some((e) => JSON.stringify(e).includes("TINA: Alternative-seeking detected"));
 
-	assert.ok(inStderr || inToolCall, `No TINA block found in output.\nSTDERR: ${stderr.slice(0, 2000)}`);
+	assert.ok(hasBlock, [
+		"No TINA block found.",
+		"Assistant text seen: " + events.filter(e => e.type === "message_update" || e.type === "message_end")
+			.map(e => JSON.stringify(e.message?.content).slice(0, 200)).join(" | "),
+		"Tool calls attempted: " + events.filter(e => e.type === "tool_execution_start")
+			.map(e => e.toolName).join(", "),
+		"STDERR: " + this.piResult.stderr.slice(0, 500),
+	].join("\n"));
 });
 
 Then("the evaluation writes Pi exit status, standard output, standard error, duration, and session transcript under {string}", async function (directory) {

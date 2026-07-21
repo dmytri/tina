@@ -3,7 +3,7 @@ Feature: TINA blocks tool calls when assistant uses disallowed phrases
 
   Scenario: Pi extension blocks a tool call after assistant says "try a different approach"
     Given a baseline agent has the tina-eval skill in a temporary workspace
-    And the baseline agent runs @dk/pi-tina from the monorepo
+    And the baseline agent installs the Pi-TINA package from the monorepo
     And the baseline agent runs under a throwaway home directory
     And the baseline agent runs "node_modules/.bin/pi" with isolated XDG directories
     And the baseline agent receives its API key and model from ".env"
