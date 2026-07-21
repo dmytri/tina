@@ -17,7 +17,9 @@ function loadPhrases() {
 		try {
 			const parsed = JSON.parse(env);
 			if (Array.isArray(parsed) && parsed.length > 0) return parsed.map(String);
-		} catch {}
+		} catch (e) {
+			console.error(`TINA: invalid TINA_PHRASES env var: ${e.message}`);
+		}
 	}
 	for (const base of [process.cwd(), PLUGIN_ROOT]) {
 		const file = resolve(base, ".tina.json");
@@ -25,25 +27,39 @@ function loadPhrases() {
 		try {
 			const cfg = JSON.parse(readFileSync(file, "utf8"));
 			if (Array.isArray(cfg.phrases) && cfg.phrases.length > 0) return cfg.phrases.map(String);
-		} catch {}
+		} catch (e) {
+			console.error(`TINA: invalid .tina.json at ${file}: ${e.message}`);
+		}
 	}
 	return DEFAULT_PHRASES;
 }
 
 const phrases = loadPhrases();
 
+function block(reason) {
+	const out = {
+		hookSpecificOutput: {
+			hookEventName: "PreToolUse",
+			permissionDecision: "deny",
+			permissionDecisionReason: reason,
+		},
+	};
+	console.log(JSON.stringify(out));
+	process.exit(0);
+}
+
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
 	try {
 		const event = JSON.parse(input);
-		const text = extractText(event);
+		const text = findAssistantText(event);
 		if (text) {
 			const lower = text.toLowerCase();
 			for (const phrase of phrases) {
 				if (lower.includes(phrase.toLowerCase())) {
-					console.error(`TINA blocked: phrase "${phrase}" detected`);
-					process.exit(2);
+					block(`TINA blocked: phrase "${phrase}" detected`);
+					return;
 				}
 			}
 		}
@@ -53,13 +69,45 @@ process.stdin.on("end", () => {
 	}
 });
 
-function extractText(event) {
+function findAssistantText(event) {
+	// Prefer conversation transcript when available (Claude Code PreToolUse)
+	const transcriptPath = event.conversation_transcript_path || event.transcript_path;
+	if (transcriptPath && existsSync(transcriptPath)) {
+		try {
+			const transcript = JSON.parse(readFileSync(transcriptPath, "utf8"));
+			const messages = Array.isArray(transcript) ? transcript : transcript.messages || [];
+			for (let i = messages.length - 1; i >= 0; i--) {
+				if (messages[i].role === "assistant") {
+					return extractContent(messages[i]);
+				}
+			}
+		} catch {}
+	}
+
+	// Fallback: scan event fields directly
 	if (event.text) return event.text;
 	if (event.content) return typeof event.content === "string" ? event.content : JSON.stringify(event.content);
-	if (event.toolName === "bash" || event.toolName === "Bash") return event.input?.command;
-	if (event.toolName === "read" || event.toolName === "Read") return event.input?.path;
-	if (event.toolName === "edit" || event.toolName === "Edit") return event.input?.content;
-	if (event.toolName === "write" || event.toolName === "Write") return event.input?.content;
+	if (event.toolName === "bash" || event.toolName === "Bash") return event.tool_input?.command || event.input?.command;
+	if (event.toolName === "read" || event.toolName === "Read") return event.tool_input?.file_path || event.input?.path;
+	if (event.toolName === "edit" || event.toolName === "Edit") return event.tool_input?.content || event.input?.content;
+	if (event.toolName === "write" || event.toolName === "Write") return event.tool_input?.content || event.input?.content;
+	if (event.tool_input) return JSON.stringify(event.tool_input);
 	if (event.input) return JSON.stringify(event.input);
+	return "";
+}
+
+function extractContent(msg) {
+	if (typeof msg.content === "string") return msg.content;
+	if (Array.isArray(msg.content)) {
+		return msg.content
+			.map((block) => {
+				if (typeof block === "string") return block;
+				if (block.type === "text" && block.text) return block.text;
+				if (block.type === "thinking" && block.thinking) return block.thinking;
+				return "";
+			})
+			.filter(Boolean)
+			.join(" ");
+	}
 	return "";
 }

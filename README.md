@@ -4,8 +4,6 @@ Pre-execution tool-call interceptor. Scans assistant text for disallowed phrases
 
 ## Setup
 
-## Setup
-
 Copy and paste this to your coding agent:
 
 ```text
@@ -17,13 +15,15 @@ and following the instructions for my agent type.
 
 ### Pi
 
+Scans assistant message text and thinking blocks via Pi's message lifecycle events. Blocks all tool types on match. Latch persists across assistant retries.
+
 ```bash
 pi install npm:@dk/pi-tina
 ```
 
 ### OpenCode
 
-Add to `opencode.json`:
+Scans assistant message text via OpenCode's message events. Blocks all tool types on match.
 
 ```json
 {
@@ -33,11 +33,11 @@ Add to `opencode.json`:
 
 ### Claude Code / Cursor / Codex / Copilot
 
+Scans the conversation transcript (Claude Code) or tool input fields (other tools) via the Open Plugins `PreToolUse` command hook. Returns a structured denial on match.
+
 ```bash
 npx plugins add dmytri/tina
 ```
-
-Discovers and installs the `agent-tina` plugin into any detected agent tools on your machine. Registers a marketplace for auto-updates.
 
 For development:
 
@@ -50,6 +50,6 @@ npx plugins add ./plugins/agent-tina
 | Package | Registry | Channel |
 |---|---|---|
 | `@dk/tina-core` | npm | Phrase scanning logic |
-| `@dk/pi-tina` | npm | Pi extension |
-| `@dk/opencode-tina` | npm | OpenCode plugin |
-| `plugins/agent-tina/` | GitHub | Open Plugin (Claude, Cursor, Codex, Copilot) |
+| `@dk/pi-tina` | npm | Pi extension (scans assistant text) |
+| `@dk/opencode-tina` | npm | OpenCode plugin (scans assistant text) |
+| `plugins/agent-tina/` | GitHub | Open Plugin (Claude: transcript scan, others: tool input scan) |

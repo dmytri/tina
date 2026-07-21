@@ -14,8 +14,8 @@ function loadConfig(): void {
 		if (Array.isArray(phrases) && phrases.length > 0) {
 			setPhrases(phrases.map(String));
 		}
-	} catch {
-		// ignore
+	} catch (e) {
+		console.error(`TINA: invalid TINA_PHRASES env var: ${(e as Error).message}`);
 	}
 }
 

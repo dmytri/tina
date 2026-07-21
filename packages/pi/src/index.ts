@@ -24,8 +24,8 @@ function loadConfig(): void {
 				setPhrases(phrases.map(String));
 				return;
 			}
-		} catch {
-			// ignore
+		} catch (e) {
+			console.error(`TINA: invalid tina.phrases in settings at ${file}: ${(e as Error).message}`);
 		}
 	}
 }
