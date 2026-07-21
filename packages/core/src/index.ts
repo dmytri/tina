@@ -11,12 +11,12 @@ const DEFAULT_PHRASES: string[] = [
 
 let PHRASES: string[] = [...DEFAULT_PHRASES];
 
-/** @planks-provisional("tina-core.feature:Custom phrases can be configured at runtime") */
+/** @planks("custom phrases are configured via setPhrases") */
 export function setPhrases(phrases: string[]): void {
 	PHRASES = phrases;
 }
 
-/** @planks-provisional("tina-core.feature:Custom phrases can be configured at runtime") */
+/** @planks("resetPhrases restores the default list") */
 export function resetPhrases(): void {
 	PHRASES = [...DEFAULT_PHRASES];
 }

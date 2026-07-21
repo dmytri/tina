@@ -23,7 +23,7 @@ loadConfig();
 
 /**
  * OpenCode plugin factory. Intercepts tool execution and blocks on phrase match.
- * @planks-provisional("tina-opencode.feature:OpenCode plugin blocks tool calls after assistant says a disallowed phrase")
+ * @planks("the tool call is blocked with the TINA rejection message")
  */
 export const TinaPlugin: Plugin = async () => {
 	return {
