@@ -35,7 +35,7 @@ Add to `opencode.json`:
 npx plugins add dmytri/tina
 ```
 
-This installs the `agent-tina` plugin from the `@dk/tina` marketplace into your tool's plugin cache. The plugin registers a `PreToolUse` hook that intercepts tool calls.
+This installs the `agent-tina` plugin from this repo into your tool's plugin cache. The plugin registers a `PreToolUse` hook that intercepts tool calls.
 
 For development, sideload directly:
 
