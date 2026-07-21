@@ -1,6 +1,6 @@
 {
 	"name": "@dk/opencode-tina",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "TINA — OpenCode adapter. Pre-execution tool-call interceptor for OpenCode.",
 	"type": "module",
 	"main": "dist/index.js",

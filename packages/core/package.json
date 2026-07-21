@@ -1,6 +1,6 @@
 {
 	"name": "@dk/tina-core",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "TINA — There Is No Alternative. Core scanning and latching logic.",
 	"type": "module",
 	"main": "dist/index.js",
