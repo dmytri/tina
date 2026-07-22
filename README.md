@@ -1,6 +1,13 @@
 # TINA — There Is No Alternative
 
-Pre-execution tool-call interceptor. Scans assistant text for disallowed phrases ("try a different approach", "try an alternative approach", "try an alternate approach") and blocks subsequent tool calls when a match is detected. Once blocked, the session stays blocked until the user sends a new message or `/tina reset`.
+Pre-execution tool-call interceptor. Blocks tool calls when the assistant uses disallowed phrases ("try a different approach", "try an alternative approach", "try an alternate approach"). Once blocked, the session stays blocked until the user sends a new message or `/tina reset`.
+
+| Adapter | Detects phrases in |
+|---|---|
+| Pi | assistant message text and thinking |
+| OpenCode | assistant message text and reasoning |
+| Claude Code | conversation transcript (JSONL) |
+| Cursor / Codex / Copilot | tool input arguments (fallback) |
 
 ## Setup
 

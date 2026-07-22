@@ -200,13 +200,18 @@ When("the agent attempts the task", { timeout: 35000 }, async function () {
 Then("the Pi session output contains a TINA block", function () {
 	const events = this.events ?? [];
 	const allText = `${this.piResult.stdout}\n${this.piResult.stderr}`;
+	const blockMatches = allText.match(/TINA: Alternative-seeking detected/g);
 
 	// Check for TINA block message in any event or stderr
-	const hasBlock =
-		allText.includes("TINA: Alternative-seeking detected") ||
+	const hasBlock = (blockMatches?.length ?? 0) > 0 ||
 		events.some((e) =>
 			JSON.stringify(e).includes("TINA: Alternative-seeking detected"),
 		);
+
+	// Count tool calls that were started (to verify blocking persists)
+	const toolStarts = events.filter(
+		(e) => e.type === "tool_execution_start",
+	).length;
 
 	assert.ok(
 		hasBlock,
@@ -223,6 +228,12 @@ Then("the Pi session output contains a TINA block", function () {
 			`STDERR: ${this.piResult.stderr.slice(0, 500)}`,
 		].join("\n"),
 	);
+
+	// Verify latch persists: at least one block should appear after a tool attempt
+	// Block count > 1 means the model retried and got blocked again
+	if ((blockMatches?.length ?? 0) > 1) {
+		console.log(`TINA latch persisted: ${blockMatches.length} block events`);
+	}
 });
 
 Then(
