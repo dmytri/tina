@@ -2,20 +2,22 @@
 
 # Captain Notes
 
-## TINA v1 — 2026-07-20
+## Current state — 2026-07-22
 
 **Product:** TINA (There Is No Alternative) — pre-execution tool-call interceptor.
 
-**Mechanism:** Dumb phrase list matching against assistant-authored text. Latch on match, total tool block, reset on user message or `/tina reset`.
+**Phrase list:** `"try a different approach"`, `"try an alternative approach"`, `"try an alternate approach"`. Configurable via env var, .tina.json, or per-adapter settings.
 
-**Phrase list (v1, tight):** `"alternative approach"`, `"alternate approach"`, `"alternatively"`
+**Architecture:** Monorepo (`packages/core`, `packages/pi`, `packages/opencode`). Open Plugin at `plugins/agent-tina/`.
 
-**Harnesses:** Pi (tool_call hook), OpenCode (tool.execute.before hook). Shared core under `src/core/`, adapters under `src/pi/` and `src/opencode/`.
+**Adapter status:**
+- Pi: working — scans message text + thinking via Pi extension API. Persistent latch.
+- OpenCode: working — scans message parts via generic `event` hook. Latch resets on user message.
+- Claude Code: working — parses JSONL transcript, scans from last user turn.
+- Cursor/Codex/Copilot: not supported — hook APIs lack transcript access.
 
-**Stack:** TypeScript, ESM, Node 20+, npm. Cucumber-js for Gherkin specs, biome for lint/format, c8 for coverage.
-
-**Bootstrap complete.** Initial commit pending. Next: dispatch QM.
+**Shipshape:** Fitted. All seams planked. 15 scenarios (12 @logic, 3 conformance skeletons). Marketed as `@dk/pi-tina`, `@dk/opencode-tina`, `@dk/tina-core` on npm.
 
 ## Future concerns
-- v2 may want phrase list extensibility (config file, env var)
-- LLM classifier was explicitly rejected by the user — never propose it
+- LLM classifier explicitly rejected by the user — never propose it
+- Cursor/Codex/Copilot support blocked on their hook APIs exposing transcript
