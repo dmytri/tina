@@ -3,7 +3,6 @@ Feature: OpenCode adapter integration
   I want TINA to block tool calls when the assistant says a disallowed phrase
   So that the agent stays on the chosen direction
 
-  @eval
   Scenario: OpenCode plugin blocks tool calls after assistant says a disallowed phrase
     Given OpenCode is running with the TINA plugin loaded
     When the assistant outputs a disallowed phrase in its response

@@ -5,6 +5,7 @@ const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
 let blocked = false;
+let currentAssistantMessageID: string | null = null;
 
 function loadConfig(): void {
 	const raw = process.env.TINA_PHRASES;
@@ -15,7 +16,9 @@ function loadConfig(): void {
 			setPhrases(phrases.map(String));
 		}
 	} catch (e) {
-		console.error(`TINA: invalid TINA_PHRASES env var: ${(e as Error).message}`);
+		console.error(
+			`TINA: invalid TINA_PHRASES env var: ${(e as Error).message}`,
+		);
 	}
 }
 
@@ -27,15 +30,44 @@ loadConfig();
  */
 export const TinaPlugin: Plugin = async () => {
 	return {
-		"message.updated": async (input: unknown) => {
-			const msg = input as { role?: string; content?: string } | undefined;
-			if (msg?.role !== "assistant") return;
+		event: async ({ event }) => {
+			if (event.type === "message.updated") {
+				const info = (event.properties as Record<string, unknown>)
+					.info as Record<string, unknown>;
+				if (info.role === "user") {
+					blocked = false;
+					currentAssistantMessageID = null;
+				} else if (info.role === "assistant") {
+					currentAssistantMessageID = info.id as string;
+				}
+			}
+
 			if (blocked) return;
-			if (typeof msg.content === "string" && scanText(msg.content).matched) {
-				blocked = true;
+
+			if (event.type === "message.part.updated") {
+				const props = event.properties as {
+					part?: Record<string, unknown>;
+				};
+				const part = props.part;
+				if (!part) return;
+
+				if (
+					currentAssistantMessageID &&
+					part.messageID !== currentAssistantMessageID
+				)
+					return;
+
+				if (part.type === "text" && typeof part.text === "string") {
+					if (scanText(part.text).matched) blocked = true;
+				} else if (
+					part.type === "reasoning" &&
+					typeof part.text === "string"
+				) {
+					if (scanText(part.text).matched) blocked = true;
+				}
 			}
 		},
-		"tool.execute.before": async (_input, _output) => {
+		"tool.execute.before": async () => {
 			if (blocked) {
 				throw new Error(BLOCK_MESSAGE);
 			}

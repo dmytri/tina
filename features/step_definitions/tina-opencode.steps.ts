@@ -1,36 +1,60 @@
 import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
-import { scanText, setPhrases } from "@dk/tina-core";
 
 const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
-let plugin: Awaited<ReturnType<typeof createPlugin>> | null = null;
+let plugin: Awaited<ReturnType<typeof loadPlugin>> | null = null;
 let blockError: Error | null = null;
 
-async function createPlugin() {
+async function loadPlugin() {
 	const mod = await import("@dk/opencode-tina");
 	const hooks = await mod.TinaPlugin();
 	return hooks as {
-		"message.updated": (input: unknown) => void | Promise<void>;
+		event: (input: {
+			event: Record<string, unknown>;
+		}) => Promise<void>;
 		"tool.execute.before": (
 			input: unknown,
 			output: unknown,
-		) => void | Promise<void>;
+		) => Promise<void>;
 	};
 }
 
 Given("OpenCode is running with the TINA plugin loaded", async () => {
-	plugin = await createPlugin();
+	plugin = await loadPlugin();
 	assert.ok(plugin, "TINA plugin loaded");
-	assert.ok(typeof plugin["message.updated"] === "function");
+	assert.ok(typeof plugin.event === "function");
 	assert.ok(typeof plugin["tool.execute.before"] === "function");
 });
 
 When("the assistant outputs a disallowed phrase in its response", async () => {
-	await plugin!["message.updated"]({
-		role: "assistant",
-		content: "I think we should try an alternative approach here.",
+	// Simulate message.updated to set assistant message context
+	await plugin!.event({
+		event: {
+			type: "message.updated",
+			properties: {
+				info: {
+					id: "assistant-msg-1",
+					role: "assistant",
+				},
+			},
+		},
+	});
+
+	// Simulate message.part.updated with the offending text
+	await plugin!.event({
+		event: {
+			type: "message.part.updated",
+			properties: {
+				part: {
+					id: "part-1",
+					messageID: "assistant-msg-1",
+					type: "text",
+					text: "I think we should try an alternative approach here.",
+				},
+			},
+		},
 	});
 });
 

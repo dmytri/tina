@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,6 +36,84 @@ function loadPhrases() {
 
 const phrases = loadPhrases();
 
+const TRANSCRIPT_STATE_FILE = resolve(PLUGIN_ROOT, ".tina-state.json");
+
+function saveState(turnId) {
+	try {
+		writeFileSync(TRANSCRIPT_STATE_FILE, JSON.stringify({ turnId }));
+	} catch {}
+}
+
+function loadState() {
+	try {
+		return JSON.parse(readFileSync(TRANSCRIPT_STATE_FILE, "utf8")).turnId;
+	} catch {
+		return null;
+	}
+}
+
+let input = "";
+process.stdin.on("data", (chunk) => (input += chunk));
+process.stdin.on("end", () => {
+	try {
+		const event = JSON.parse(input);
+		const transcriptPath = event.conversation_transcript_path || event.transcript_path;
+
+		if (transcriptPath && existsSync(transcriptPath)) {
+			const raw = readFileSync(transcriptPath, "utf8");
+			// JSONL: one JSON object per line
+			const lines = raw.split("\n").filter(Boolean);
+			const messages = lines.map((line) => {
+				try {
+					return JSON.parse(line);
+				} catch {
+					return null;
+				}
+			}).filter(Boolean);
+
+			// Find the most recent user prompt
+			let lastUserIdx = -1;
+			for (let i = messages.length - 1; i >= 0; i--) {
+				const msg = messages[i];
+				if (msg.role === "user" || msg.type === "user_prompt") {
+					lastUserIdx = i;
+					break;
+				}
+			}
+
+			// Scan every assistant text block after the last user prompt
+			const previousTurn = loadState();
+			const currentTurn = lastUserIdx >= 0 ? messages[lastUserIdx].id || lastUserIdx : null;
+
+			if (currentTurn !== null && currentTurn === previousTurn) {
+				// Already scanned this turn, skip
+				process.exit(0);
+			}
+			saveState(currentTurn);
+
+			for (let i = lastUserIdx + 1; i < messages.length; i++) {
+				const msg = messages[i];
+				if (msg.role === "assistant" || msg.type === "assistant") {
+					const text = extractContent(msg);
+					if (text) {
+						const lower = text.toLowerCase();
+						for (const phrase of phrases) {
+							if (lower.includes(phrase.toLowerCase())) {
+								block(`TINA blocked: phrase "${phrase}" detected`);
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		process.exit(0);
+	} catch {
+		process.exit(0);
+	}
+});
+
 function block(reason) {
 	const out = {
 		hookSpecificOutput: {
@@ -48,56 +126,9 @@ function block(reason) {
 	process.exit(0);
 }
 
-let input = "";
-process.stdin.on("data", (chunk) => (input += chunk));
-process.stdin.on("end", () => {
-	try {
-		const event = JSON.parse(input);
-		const text = findAssistantText(event);
-		if (text) {
-			const lower = text.toLowerCase();
-			for (const phrase of phrases) {
-				if (lower.includes(phrase.toLowerCase())) {
-					block(`TINA blocked: phrase "${phrase}" detected`);
-					return;
-				}
-			}
-		}
-		process.exit(0);
-	} catch {
-		process.exit(0);
-	}
-});
-
-function findAssistantText(event) {
-	// Prefer conversation transcript when available (Claude Code PreToolUse)
-	const transcriptPath = event.conversation_transcript_path || event.transcript_path;
-	if (transcriptPath && existsSync(transcriptPath)) {
-		try {
-			const transcript = JSON.parse(readFileSync(transcriptPath, "utf8"));
-			const messages = Array.isArray(transcript) ? transcript : transcript.messages || [];
-			for (let i = messages.length - 1; i >= 0; i--) {
-				if (messages[i].role === "assistant") {
-					return extractContent(messages[i]);
-				}
-			}
-		} catch {}
-	}
-
-	// Fallback: scan event fields directly
-	if (event.text) return event.text;
-	if (event.content) return typeof event.content === "string" ? event.content : JSON.stringify(event.content);
-	if (event.toolName === "bash" || event.toolName === "Bash") return event.tool_input?.command || event.input?.command;
-	if (event.toolName === "read" || event.toolName === "Read") return event.tool_input?.file_path || event.input?.path;
-	if (event.toolName === "edit" || event.toolName === "Edit") return event.tool_input?.content || event.input?.content;
-	if (event.toolName === "write" || event.toolName === "Write") return event.tool_input?.content || event.input?.content;
-	if (event.tool_input) return JSON.stringify(event.tool_input);
-	if (event.input) return JSON.stringify(event.input);
-	return "";
-}
-
 function extractContent(msg) {
 	if (typeof msg.content === "string") return msg.content;
+	if (typeof msg.text === "string") return msg.text;
 	if (Array.isArray(msg.content)) {
 		return msg.content
 			.map((block) => {
