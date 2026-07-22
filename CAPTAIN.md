@@ -2,22 +2,24 @@
 
 # Captain Notes
 
-## Current state — 2026-07-22
+## Current state - 2026-07-22
 
-**Product:** TINA (There Is No Alternative) — pre-execution tool-call interceptor.
+**Product:** TINA (There Is No Alternative), a pre-execution tool-call interceptor.
 
 **Phrase list:** `"try a different approach"`, `"try an alternative approach"`, `"try an alternate approach"`. Configurable via env var, .tina.json, or per-adapter settings.
 
 **Architecture:** Monorepo (`packages/core`, `packages/pi`, `packages/opencode`). Open Plugin at `plugins/agent-tina/`.
 
-**Adapter status:**
-- Pi: working — scans message text + thinking via Pi extension API. Persistent latch.
-- OpenCode: working — scans message parts via generic `event` hook. Latch resets on user message.
-- Claude Code: working — parses JSONL transcript, scans from last user turn.
-- Cursor/Codex/Copilot: not supported — hook APIs lack transcript access.
+**Current voyage:** Repair session isolation, human-turn detection, production-backed verification, static gates, and release identity. Target releases are OpenCode 0.3.2, Pi 0.3.3, and agent-tina 0.3.4.
 
-**Shipshape:** Fitted. All seams planked. 15 scenarios (12 @logic, 3 conformance skeletons). Marketed as `@dk/pi-tina`, `@dk/opencode-tina`, `@dk/tina-core` on npm.
+**Adapter status:**
+- Pi: scans message text and thinking. Session isolation is under repair.
+- OpenCode: scans message parts. Session isolation and assistant attribution are under repair.
+- Claude Code: parses JSONL transcripts. Human prompt and tool-result distinction is under repair.
+- Cursor/Codex/Copilot: not supported because hook APIs lack transcript access.
+
+**Shipshape:** Fitted. Current conformance checks omit part of the production adapter surface and the configured static gates are red.
 
 ## Future concerns
-- LLM classifier explicitly rejected by the user — never propose it
+- LLM classifier explicitly rejected by the user. Never propose it.
 - Cursor/Codex/Copilot support blocked on their hook APIs exposing transcript

@@ -4,9 +4,6 @@ import type { Plugin } from "@opencode-ai/plugin";
 const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
-let blocked = false;
-let currentAssistantMessageID: string | null = null;
-
 function loadConfig(): void {
 	const raw = process.env.TINA_PHRASES;
 	if (!raw) return;
@@ -27,8 +24,15 @@ loadConfig();
 /**
  * OpenCode plugin factory. Intercepts tool execution and blocks on phrase match.
  * @planks("the tool call is blocked with the TINA rejection message")
+ * @planks("the assistant can execute a tool call")
+ * @planks("session {string} rejects a tool call")
+ * @planks("session {string} permits a tool call")
+ * @planks("session {string} remains latched")
  */
 export const TinaPlugin: Plugin = async () => {
+	let blocked = false;
+	let currentAssistantMessageID: string | null = null;
+
 	return {
 		event: async ({ event }) => {
 			if (event.type === "message.updated") {
@@ -52,17 +56,14 @@ export const TinaPlugin: Plugin = async () => {
 				if (!part) return;
 
 				if (
-					currentAssistantMessageID &&
+					!currentAssistantMessageID ||
 					part.messageID !== currentAssistantMessageID
 				)
 					return;
 
 				if (part.type === "text" && typeof part.text === "string") {
 					if (scanText(part.text).matched) blocked = true;
-				} else if (
-					part.type === "reasoning" &&
-					typeof part.text === "string"
-				) {
+				} else if (part.type === "reasoning" && typeof part.text === "string") {
 					if (scanText(part.text).matched) blocked = true;
 				}
 			}

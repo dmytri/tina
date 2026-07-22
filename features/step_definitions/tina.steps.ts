@@ -25,10 +25,6 @@ Given("assistant text contains the phrase {string}", function (phrase: string) {
 	(this as Record<string, unknown>).assistantText = phrase;
 });
 
-Given("assistant text contains the word {string}", function (word: string) {
-	(this as Record<string, unknown>).assistantText = word;
-});
-
 Given("assistant text is empty", function () {
 	(this as Record<string, unknown>).assistantText = "";
 });
@@ -70,11 +66,43 @@ When("a new user message arrives", () => {
 	testBlockMessage = null;
 });
 
-When("the user sends {string}", (command: string) => {
+When("the user sends {string}", async function (command: string) {
 	if (command === "/tina reset") {
 		testLatched = false;
 		testBlockMessage = null;
 	}
+	const openCodePlugin = (this as Record<string, unknown>).openCodePlugin as
+		| { event: (input: { event: Record<string, unknown> }) => Promise<void> }
+		| undefined;
+	if (openCodePlugin) {
+		await openCodePlugin.event({
+			event: {
+				type: "message.updated",
+				properties: { info: { id: "user-message", role: "user" } },
+			},
+		});
+		await openCodePlugin.event({
+			event: {
+				type: "message.part.updated",
+				properties: {
+					part: {
+						id: "user-part",
+						messageID: "user-message",
+						type: "text",
+						text: command,
+					},
+				},
+			},
+		});
+	}
+});
+
+When("the assistant outputs {string}", async function (text: string) {
+	const piSession = (this as Record<string, unknown>).piSession as
+		| { assistant: (value: string) => Promise<void> }
+		| undefined;
+	assert.ok(piSession, "Pi session is configured");
+	await piSession.assistant(text);
 });
 
 Then("TINA reports a match", function () {

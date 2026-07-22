@@ -75,7 +75,7 @@ process.stdin.on("end", () => {
 		let lastUserIdx = -1;
 		for (let i = records.length - 1; i >= 0; i--) {
 			const r = records[i];
-			if (r.type === "user" || r.type === "user_prompt" || r.message?.role === "user") {
+			if (isHumanPrompt(r)) {
 				lastUserIdx = i;
 				break;
 			}
@@ -101,6 +101,26 @@ process.stdin.on("end", () => {
 		process.exit(0);
 	}
 });
+
+/**
+ * @planks("the hook denies the tool call with the TINA rejection message")
+ * @planks("the hook permits the tool call")
+ */
+function isHumanPrompt(record) {
+	const content = record.message?.content;
+	if (
+		Array.isArray(content) &&
+		content.length > 0 &&
+		content.every((block) => block?.type === "tool_result")
+	) {
+		return false;
+	}
+	return (
+		record.type === "user" ||
+		record.type === "user_prompt" ||
+		record.message?.role === "user"
+	);
+}
 
 function extractContent(msg) {
 	if (typeof msg.content === "string") return msg.content;

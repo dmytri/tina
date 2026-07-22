@@ -7,9 +7,6 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
-let assistantText = "";
-let latched = false;
-
 function loadConfig(): void {
 	for (const base of [
 		resolve(process.cwd(), ".pi"),
@@ -25,7 +22,9 @@ function loadConfig(): void {
 				return;
 			}
 		} catch (e) {
-			console.error(`TINA: invalid tina.phrases in settings at ${file}: ${(e as Error).message}`);
+			console.error(
+				`TINA: invalid tina.phrases in settings at ${file}: ${(e as Error).message}`,
+			);
 		}
 	}
 }
@@ -35,8 +34,15 @@ loadConfig();
 /**
  * Pi extension factory. Hooks into message stream and tool calls.
  * @planks("the Pi session output contains a TINA block")
+ * @planks("the first tool call is rejected with the TINA message")
+ * @planks("the next tool call is rejected with the TINA message")
+ * @planks("session {string} rejects a tool call")
+ * @planks("session {string} permits a tool call")
  */
 export default function (pi: ExtensionAPI) {
+	let assistantText = "";
+	let latched = false;
+
 	pi.on("message_update", async (event) => {
 		if (event.message.role !== "assistant") return;
 		assistantText = extractText(event.message);

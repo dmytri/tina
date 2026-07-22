@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { Given, Then, When } from "@cucumber/cucumber";
 import { getPhrases, resetPhrases, scanText, setPhrases } from "@dk/tina-core";
 
-const DEFAULT = ["try a different approach", "try an alternative approach", "try an alternate approach"];
+const DEFAULT = [
+	"try a different approach",
+	"try an alternative approach",
+	"try an alternate approach",
+];
 const CUSTOM = ["never say this", "avoid that phrase"];
 
 Given("the default phrase list is active", () => {
