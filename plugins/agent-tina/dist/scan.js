@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,22 +36,6 @@ function loadPhrases() {
 
 const phrases = loadPhrases();
 
-const TRANSCRIPT_STATE_FILE = resolve(PLUGIN_ROOT, ".tina-state.json");
-
-function saveState(turnId) {
-	try {
-		writeFileSync(TRANSCRIPT_STATE_FILE, JSON.stringify({ turnId }));
-	} catch {}
-}
-
-function loadState() {
-	try {
-		return JSON.parse(readFileSync(TRANSCRIPT_STATE_FILE, "utf8")).turnId;
-	} catch {
-		return null;
-	}
-}
-
 function block(reason) {
 	const out = {
 		hookSpecificOutput: {
@@ -71,17 +55,14 @@ process.stdin.on("end", () => {
 		const event = JSON.parse(input);
 		const transcriptPath = event.conversation_transcript_path || event.transcript_path;
 
-		// Without a conversation transcript, we cannot observe assistant text.
-		// Scanning tool arguments would produce false positives (command text)
-		// and miss the real case (assistant saying the phrase). Allow the call.
 		if (!transcriptPath || !existsSync(transcriptPath)) {
 			process.exit(0);
 		}
 
-		// Parse JSONL transcript: one JSON object per line
 		const raw = readFileSync(transcriptPath, "utf8");
-		const lines = raw.split("\n").filter(Boolean);
-		const messages = lines
+		const records = raw
+			.split("\n")
+			.filter(Boolean)
 			.map((line) => {
 				try {
 					return JSON.parse(line);
@@ -91,40 +72,25 @@ process.stdin.on("end", () => {
 			})
 			.filter(Boolean);
 
-		// Find the most recent user prompt
 		let lastUserIdx = -1;
-		for (let i = messages.length - 1; i >= 0; i--) {
-			const msg = messages[i];
-			if (msg.role === "user" || msg.type === "user_prompt") {
+		for (let i = records.length - 1; i >= 0; i--) {
+			const r = records[i];
+			if (r.type === "user" || r.type === "user_prompt" || r.message?.role === "user") {
 				lastUserIdx = i;
 				break;
 			}
 		}
 
-		// Skip if we already scanned this turn
-		const previousTurn = loadState();
-		const currentTurn =
-			lastUserIdx >= 0
-				? messages[lastUserIdx].id || String(lastUserIdx)
-				: null;
-
-		if (currentTurn !== null && currentTurn === previousTurn) {
-			process.exit(0);
-		}
-		saveState(currentTurn);
-
-		// Scan every assistant text block after the last user prompt
-		for (let i = lastUserIdx + 1; i < messages.length; i++) {
-			const msg = messages[i];
-			if (msg.role === "assistant" || msg.type === "assistant") {
-				const text = extractContent(msg);
-				if (text) {
-					const lower = text.toLowerCase();
-					for (const phrase of phrases) {
-						if (lower.includes(phrase.toLowerCase())) {
-							block(`TINA blocked: phrase "${phrase}" detected`);
-							return;
-						}
+		for (let i = lastUserIdx + 1; i < records.length; i++) {
+			const r = records[i];
+			if (r.type !== "assistant" && r.message?.role !== "assistant") continue;
+			const text = extractContent(r.message || r);
+			if (text) {
+				const lower = text.toLowerCase();
+				for (const phrase of phrases) {
+					if (lower.includes(phrase.toLowerCase())) {
+						block(`TINA blocked: phrase "${phrase}" detected`);
+						return;
 					}
 				}
 			}
