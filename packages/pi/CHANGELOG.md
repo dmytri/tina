@@ -1,5 +1,11 @@
 # @dk/pi-tina
 
+## 0.3.2
+
+### Patch Changes
+
+- Replace last @planks-provisional with @planks
+
 ## 0.3.1
 
 ### Patch Changes
