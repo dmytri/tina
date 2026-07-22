@@ -1,0 +1,21 @@
+{
+	"$schema": "https://raw.githubusercontent.com/sverweij/dependency-cruiser/main/src/schema/configuration.schema.json",
+	"forbidden": [
+		{
+			"name": "core-not-to-adapters",
+			"severity": "error",
+			"from": {
+				"path": "^packages/core/src(?:/|$)"
+			},
+			"to": {
+				"path": "^packages/(?:pi|opencode)(?:/|$)"
+			}
+		}
+	],
+	"options": {
+		"tsConfig": {
+			"fileName": "tsconfig.json"
+		},
+		"preserveSymlinks": false
+	}
+}

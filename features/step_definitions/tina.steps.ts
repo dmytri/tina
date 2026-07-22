@@ -5,8 +5,10 @@ import { getPhrases, scanText } from "@dk/tina-core";
 const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
-let testLatched = false;
-let testBlockMessage: string | null = null;
+type TinaWorld = Record<string, unknown> & {
+	testLatched?: boolean;
+	testBlockMessage?: string | null;
+};
 
 Given("TINA is installed as a pre-execution interceptor", () => {
 	(typeof scanText === "function").valueOf();
@@ -29,47 +31,52 @@ Given("assistant text is empty", function () {
 	(this as Record<string, unknown>).assistantText = "";
 });
 
-Given("the session is unlatched", () => {
-	testLatched = false;
-	testBlockMessage = null;
+Given("the session is unlatched", function () {
+	const world = this as TinaWorld;
+	world.testLatched = false;
+	world.testBlockMessage = null;
 });
 
-Given("the session is latched", () => {
-	testLatched = true;
-	testBlockMessage = BLOCK_MESSAGE;
+Given("the session is latched", function () {
+	const world = this as TinaWorld;
+	world.testLatched = true;
+	world.testBlockMessage = BLOCK_MESSAGE;
 });
 
 When("TINA scans the text", function () {
-	const ctx = this as Record<string, unknown>;
+	const ctx = this as TinaWorld;
 	const text = ctx.assistantText as string;
 	const result = scanText(text);
 	ctx.scanResult = result;
 	if (result.matched) {
-		testLatched = true;
-		testBlockMessage = BLOCK_MESSAGE;
+		ctx.testLatched = true;
+		ctx.testBlockMessage = BLOCK_MESSAGE;
 	} else {
-		testBlockMessage = null;
+		ctx.testBlockMessage = null;
 	}
 });
 
-When("TINA detects a match", () => {
-	testLatched = true;
-	testBlockMessage = BLOCK_MESSAGE;
+When("TINA detects a match", function () {
+	const world = this as TinaWorld;
+	world.testLatched = true;
+	world.testBlockMessage = BLOCK_MESSAGE;
 });
 
 When("TINA scans text that does not match", () => {
 	// latch unchanged, message unchanged
 });
 
-When("a new user message arrives", () => {
-	testLatched = false;
-	testBlockMessage = null;
+When("a new user message arrives", function () {
+	const world = this as TinaWorld;
+	world.testLatched = false;
+	world.testBlockMessage = null;
 });
 
 When("the user sends {string}", async function (command: string) {
 	if (command === "/tina reset") {
-		testLatched = false;
-		testBlockMessage = null;
+		const world = this as TinaWorld;
+		world.testLatched = false;
+		world.testBlockMessage = null;
 	}
 	const openCodePlugin = (this as Record<string, unknown>).openCodePlugin as
 		| { event: (input: { event: Record<string, unknown> }) => Promise<void> }
@@ -115,34 +122,35 @@ Then("TINA reports no match", function () {
 	assert.equal((ctx.scanResult as { matched: boolean }).matched, false);
 });
 
-Then("the session latches", () => {
-	assert.ok(testLatched);
+Then("the session latches", function () {
+	assert.ok((this as TinaWorld).testLatched);
 });
 
 Then(
 	"every subsequent tool call is rejected with the message",
-	(expectedMessage: string) => {
-		assert.ok(testLatched, "session should be latched");
+	function (expectedMessage: string) {
+		const world = this as TinaWorld;
+		assert.ok(world.testLatched, "session should be latched");
 		assert.equal(
-			testBlockMessage,
+			world.testBlockMessage,
 			expectedMessage,
 			"rejection message mismatch",
 		);
 	},
 );
 
-Then("the session remains latched", () => {
-	assert.ok(testLatched);
+Then("the session remains latched", function () {
+	assert.ok((this as TinaWorld).testLatched);
 });
 
-Then("tool calls continue to be rejected", () => {
-	assert.ok(testLatched);
+Then("tool calls continue to be rejected", function () {
+	assert.ok((this as TinaWorld).testLatched);
 });
 
-Then("the session unlatches", () => {
-	assert.equal(testLatched, false);
+Then("the session unlatches", function () {
+	assert.equal((this as TinaWorld).testLatched, false);
 });
 
-Then("tool calls are permitted again", () => {
-	assert.equal(testLatched, false);
+Then("tool calls are permitted again", function () {
+	assert.equal((this as TinaWorld).testLatched, false);
 });

@@ -1,0 +1,25 @@
+{
+	"phrases": {
+		"tryDifferentApproach": "try a different approach",
+		"tryAlternativeApproach": "try an alternative approach",
+		"tryAlternateApproach": "try an alternate approach"
+	},
+	"block": {
+		"toolAccessRevoked": "TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.",
+		"detectedPhrase": "TINA blocked: phrase \"${phrase}\" detected"
+	},
+	"config": {
+		"invalidEnvironment": "TINA: invalid TINA_PHRASES env var: ${error.message}",
+		"invalidPiSettings": "TINA: invalid tina.phrases in settings at ${file}: ${error.message}",
+		"invalidClaudeFile": "TINA: invalid .tina.json at ${file}: ${error.message}"
+	},
+	"warning": {
+		"inactiveTranscript": "TINA inactive: transcript ${reason}"
+	},
+	"command": {
+		"reset": {
+			"name": "tina",
+			"description": "Reset TINA block"
+		}
+	}
+}

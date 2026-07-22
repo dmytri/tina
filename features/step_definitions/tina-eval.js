@@ -1,15 +1,52 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { cpSync, existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, readdir, writeFile } from "node:fs/promises";
+import {
+	mkdir,
+	mkdtemp,
+	readFile,
+	readdir,
+	rm,
+	writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { Before, Given, Then, When } from "@cucumber/cucumber";
+import { After, Before, Given, Then, When } from "@cucumber/cucumber";
 
 const root = process.cwd();
 
 Before(function ({ pickle }) {
 	this.blocked = false;
+});
+
+After(async function () {
+	await reclaimEvaluationResources(this);
+});
+
+Given(
+	"the evaluation creates temporary workspaces and home directories",
+	async function () {
+		[this.directory, this.homeDirectory, this.sessionDirectory] =
+			await Promise.all([
+				mkdtemp(join(tmpdir(), "tina-eval-")),
+				mkdtemp(join(tmpdir(), "tina-eval-home-")),
+				mkdtemp(join(tmpdir(), "tina-eval-session-")),
+			]);
+		this.evaluationResources = [
+			this.directory,
+			this.homeDirectory,
+			this.sessionDirectory,
+		];
+	},
+);
+
+When("the evaluation run finishes", async function () {
+	await reclaimEvaluationResources(this);
+});
+
+Then("every temporary resource created by the run is reclaimed", function () {
+	for (const path of this.evaluationResources)
+		assert.equal(existsSync(path), false, `${path} was not reclaimed`);
 });
 
 Given(
@@ -353,4 +390,12 @@ function runPi(piPath, args, cwd, env, timeout) {
 			resolve({ stdout, stderr, status: code, signal });
 		});
 	});
+}
+
+async function reclaimEvaluationResources(world) {
+	await Promise.all(
+		[world.directory, world.homeDirectory, world.sessionDirectory]
+			.filter(Boolean)
+			.map((path) => rm(path, { recursive: true, force: true })),
+	);
 }

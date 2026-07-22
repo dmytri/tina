@@ -25,3 +25,18 @@ Feature: OpenCode adapter integration
     And OpenCode session "beta" is unlatched
     When the user sends a message in session "beta"
     Then session "alpha" remains latched
+
+  Scenario: OpenCode loads custom phrases from its environment
+    Given "TINA_PHRASES" configures "stay with this plan"
+    When the OpenCode assistant outputs "stay with this plan"
+    Then the tool call is blocked with the TINA rejection message
+
+  Scenario: OpenCode reports invalid custom phrase configuration
+    Given "TINA_PHRASES" contains invalid JSON
+    When the OpenCode plugin loads
+    Then OpenCode reports that "TINA_PHRASES" is invalid
+
+  Scenario: OpenCode detects a disallowed phrase in reasoning output
+    Given OpenCode is running with the TINA plugin loaded
+    When reasoning output contains "try an alternative approach"
+    Then the tool call is blocked with the TINA rejection message

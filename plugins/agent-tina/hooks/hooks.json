@@ -1,14 +1,14 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${PLUGIN_ROOT}/dist/scan.js"
-          }
-        ]
-      }
-    ]
-  }
+	"hooks": {
+		"PreToolUse": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node ${PLUGIN_ROOT}/dist/scan.js"
+					}
+				]
+			}
+		]
+	}
 }

@@ -39,3 +39,55 @@ Feature: Shipshape conformance checks
     Given the repository TypeScript source
     When the configured typecheck and lint commands run
     Then both commands exit successfully
+
+  @conformance
+  Scenario: Product-facing text resolves from a content catalog
+    Given the TINA content catalog at "assets/tina-content.json"
+    And the TINA production modules emit user-facing text
+    When production string sources are inspected
+    Then every product-facing string resolves from a content catalog
+
+  @conformance
+  Scenario: Binding latch scenarios execute production seams
+    Given the binding TINA latch scenarios
+    When their step definitions are inspected
+    Then each latch action and assertion executes a production seam
+
+  @eval @conformance
+  Scenario: Evaluation resources are reclaimed after each run
+    Given the evaluation creates temporary workspaces and home directories
+    When the evaluation run finishes
+    Then every temporary resource created by the run is reclaimed
+
+  @conformance
+  Scenario: Independent logic scenarios run concurrently
+    Given the logic scenarios use isolated state
+    When the configured logic tier runs
+    Then independent scenarios execute concurrently
+
+  @conformance
+  Scenario: Plank form is checked from parsed declarations
+    Given TypeScript and JavaScript production seams carry plank annotations
+    When the TypeScript compiler API checks plank declarations
+    Then every plank is a docblock tag on a declaration
+    And every provisional plank names a scenario that carries "@captain"
+
+  @conformance
+  Scenario: Static verification covers every implementation path
+    Given RIGGING.md lists each production implementation path
+    When the configured lint command runs
+    Then every implementation path passes lint
+
+  @conformance
+  Scenario: Adapters depend inward on core
+    Given the adapter and core module import graph
+    And the boundary policy in "scantlings/dependency-cruiser.json"
+    When dependency-cruiser checks the implementation paths
+    Then adapters may import core
+    And core does not import an adapter
+
+  @conformance
+  Scenario: Phrase detection has one production implementation
+    Given each supported adapter detects configured phrases
+    When registered phrase-detection implementations are inspected
+    Then one production seam implements phrase detection

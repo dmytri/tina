@@ -4,6 +4,10 @@ import type { Plugin } from "@opencode-ai/plugin";
 const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
+/**
+ * @planks("the OpenCode assistant outputs {string}")
+ * @planks("the OpenCode plugin loads")
+ */
 function loadConfig(): void {
 	const raw = process.env.TINA_PHRASES;
 	if (!raw) return;
@@ -28,6 +32,7 @@ loadConfig();
  * @planks("session {string} rejects a tool call")
  * @planks("session {string} permits a tool call")
  * @planks("session {string} remains latched")
+ * @planks("reasoning output contains {string}")
  */
 export const TinaPlugin: Plugin = async () => {
 	let blocked = false;

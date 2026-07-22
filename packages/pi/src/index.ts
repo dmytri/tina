@@ -7,6 +7,10 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 const BLOCK_MESSAGE =
 	"TINA: Alternative-seeking detected. Tool access revoked. State the exact blocker.";
 
+/**
+ * @planks("the Pi assistant outputs {string}")
+ * @planks("the Pi extension loads")
+ */
 function loadConfig(): void {
 	for (const base of [
 		resolve(process.cwd(), ".pi"),
@@ -38,6 +42,9 @@ loadConfig();
  * @planks("the next tool call is rejected with the TINA message")
  * @planks("session {string} rejects a tool call")
  * @planks("session {string} permits a tool call")
+ * @planks("new input reaches the Pi session")
+ * @planks("the user runs the Pi {string} command")
+ * @planks("the assistant outputs {string} in a {string} block")
  */
 export default function (pi: ExtensionAPI) {
 	let assistantText = "";
@@ -71,6 +78,10 @@ export default function (pi: ExtensionAPI) {
 	});
 }
 
+/**
+ * @planks("the assistant outputs {string}")
+ * @planks("the assistant outputs {string} in a {string} block")
+ */
 function extractText(message: { content?: unknown }): string {
 	const content = message.content;
 	if (!content) return "";
