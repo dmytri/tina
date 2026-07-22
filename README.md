@@ -7,7 +7,7 @@ Pre-execution tool-call interceptor. Blocks tool calls when the assistant uses d
 | Pi | assistant message text and thinking |
 | OpenCode | assistant message text and reasoning |
 | Claude Code | conversation transcript (JSONL) |
-| Cursor / Codex / Copilot | tool input arguments (fallback) |
+| Cursor / Codex / Copilot | requires transcript access — falls open when unavailable |
 
 ## Setup
 
@@ -40,7 +40,7 @@ Scans assistant message text via OpenCode's message events. Blocks all tool type
 
 ### Claude Code / Cursor / Codex / Copilot
 
-Scans the conversation transcript (Claude Code) or tool input fields (other tools) via the Open Plugins `PreToolUse` command hook. Returns a structured denial on match.
+Scans the conversation transcript via the Open Plugins `PreToolUse` hook. Returns a structured denial on match. Cursor, Codex, and Copilot will be supported once their hook APIs expose the conversation transcript.
 
 ```bash
 npx plugins add dmytri/tina
@@ -59,4 +59,4 @@ npx plugins add ./plugins/agent-tina
 | `@dk/tina-core` | npm | Phrase scanning logic |
 | `@dk/pi-tina` | npm | Pi extension (scans assistant text) |
 | `@dk/opencode-tina` | npm | OpenCode plugin (scans assistant text) |
-| `plugins/agent-tina/` | GitHub | Open Plugin (Claude: transcript scan, others: tool input scan) |
+| `plugins/agent-tina/` | GitHub | Open Plugin (Claude Code: transcript scan, others: transcript not yet available) |

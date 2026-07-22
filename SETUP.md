@@ -47,11 +47,13 @@ TINA_PHRASES='["try a different approach","try an alternative approach"]'
 
 ### Claude Code / Cursor / Codex / Copilot
 
+For Claude Code, this scans the conversation transcript for disallowed phrases.
+
 ```bash
 npx plugins add dmytri/tina
 ```
 
-Auto-detects installed tools (Claude Code, Codex, Copilot, etc.) and installs the plugin to each one. Registers a marketplace for auto-updates.
+Cursor, Codex, and Copilot support will be enabled once their hook APIs expose the conversation transcript.
 
 For development:
 
