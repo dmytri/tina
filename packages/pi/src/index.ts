@@ -34,7 +34,7 @@ loadConfig();
 
 /**
  * Pi extension factory. Hooks into message stream and tool calls.
- * @planks-provisional("tina-eval.feature:Pi extension blocks a tool call after assistant says \"try a different approach\"")
+ * @planks("the Pi session output contains a TINA block")
  */
 export default function (pi: ExtensionAPI) {
 	pi.on("message_update", async (event) => {
