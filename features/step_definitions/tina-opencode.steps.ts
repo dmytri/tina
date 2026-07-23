@@ -115,6 +115,26 @@ Given(
 	},
 );
 
+Given(
+	"one OpenCode plugin instance handles sessions {string} and {string}",
+	async function (first: string, second: string) {
+		const plugin = await loadPlugin();
+		(this as OpenCodeWorld).openCodeSessions = new Map([
+			[first, plugin],
+			[second, plugin],
+		]);
+	},
+);
+
+Given(
+	"one OpenCode plugin instance handles session {string}",
+	async function (session: string) {
+		(this as OpenCodeWorld).openCodeSessions = new Map([
+			[session, await loadPlugin()],
+		]);
+	},
+);
+
 When(
 	"the assistant in session {string} outputs {string}",
 	async function (session: string, text: string) {
@@ -134,7 +154,10 @@ Then("session {string} rejects a tool call", async function (session: string) {
 		return;
 	}
 	await assert.rejects(
-		sessionPlugin(this, session)["tool.execute.before"]({}, {}),
+		sessionPlugin(this, session)["tool.execute.before"](
+			{ sessionID: session },
+			{},
+		),
 		{ message: BLOCK_MESSAGE },
 	);
 });
@@ -145,14 +168,17 @@ Then("session {string} permits a tool call", async function (session: string) {
 		assert.equal(await pi.toolCall(), undefined);
 		return;
 	}
-	await sessionPlugin(this, session)["tool.execute.before"]({}, {});
+	await sessionPlugin(this, session)["tool.execute.before"](
+		{ sessionID: session },
+		{},
+	);
 });
 
 Given("OpenCode session {string} is latched", async function (session: string) {
 	const world = this as OpenCodeWorld;
 	world.openCodeSessions ??= new Map();
 	const sessions = world.openCodeSessions;
-	const selected = await loadPlugin();
+	const selected = sessions.get(session) ?? (await loadPlugin());
 	sessions.set(session, selected);
 	await sendAssistantText(selected, session, "try an alternative approach");
 });
@@ -218,7 +244,9 @@ Given(
 	async function (session: string) {
 		const world = this as OpenCodeWorld;
 		world.openCodeSessions ??= new Map();
-		world.openCodeSessions.set(session, await loadPlugin());
+		if (!world.openCodeSessions.has(session)) {
+			world.openCodeSessions.set(session, await loadPlugin());
+		}
 	},
 );
 
@@ -236,9 +264,21 @@ When(
 	},
 );
 
+When("OpenCode deletes session {string}", async function (session: string) {
+	await sessionPlugin(this, session).event({
+		event: {
+			type: "session.deleted",
+			properties: { info: { id: session } },
+		},
+	});
+});
+
 Then("session {string} remains latched", async function (session: string) {
 	await assert.rejects(
-		sessionPlugin(this, session)["tool.execute.before"]({}, {}),
+		sessionPlugin(this, session)["tool.execute.before"](
+			{ sessionID: session },
+			{},
+		),
 		{ message: BLOCK_MESSAGE },
 	);
 });

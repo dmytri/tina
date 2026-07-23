@@ -10,11 +10,11 @@
 
 **Architecture:** Monorepo (`packages/core`, `packages/pi`, `packages/opencode`). Open Plugin at `plugins/agent-tina/`.
 
-**Current voyage:** Complete and ready for outbound. Target releases are OpenCode 0.3.2, Pi 0.3.3, and agent-tina 0.3.4.
+**Current voyage:** Correct OpenCode session scoping and independent Open Plugin version synchronization. Target releases are core 0.3.2, OpenCode 0.3.3, Pi 0.3.4, and agent-tina 0.3.5.
 
 **Adapter status:**
 - Pi: scans message text and thinking with session-local latch state.
-- OpenCode: scans assistant message parts with session-local latch state.
+- OpenCode: must keep session-local latch state when one plugin instance handles multiple sessions.
 - Claude Code: parses JSONL transcripts and distinguishes human prompts from tool results.
 - Cursor/Codex/Copilot: not supported because hook APIs lack transcript access.
 

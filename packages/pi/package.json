@@ -1,6 +1,6 @@
 {
 	"name": "@dk/pi-tina",
-	"version": "0.3.3",
+	"version": "0.3.4",
 	"description": "TINA — Pi adapter. Pre-execution tool-call interceptor for Pi.",
 	"type": "module",
 	"main": "dist/index.js",

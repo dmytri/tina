@@ -11,9 +11,19 @@ Feature: Release artifact identity
 
     Examples:
       | artifact              | version |
-      | OpenCode npm package  | 0.3.2   |
-      | Pi npm package        | 0.3.3   |
-      | agent-tina plugin     | 0.3.4   |
+      | Core npm package      | 0.3.2   |
+      | OpenCode npm package  | 0.3.3   |
+      | Pi npm package        | 0.3.4   |
+      | agent-tina plugin     | 0.3.5   |
+
+  @contract
+  Scenario: Open Plugin version remains independent during metadata sync
+    Given copied release metadata with Open Plugin version "0.3.5"
+    And the copied core package version is "0.3.2"
+    When Open Plugin release metadata is synchronized
+    Then both copied plugin manifests identify version "0.3.5"
+    And the copied marketplace entry identifies version "0.3.5"
+    And the copied core package version remains "0.3.2"
 
   @contract
   Scenario Outline: Published adapters use a bounded compatible core range

@@ -15,16 +15,31 @@ Feature: OpenCode adapter integration
     Then the assistant can execute a tool call
 
   Scenario: OpenCode sessions have independent latches
-    Given OpenCode sessions "alpha" and "beta" use the TINA plugin
+    Given one OpenCode plugin instance handles sessions "alpha" and "beta"
     When the assistant in session "alpha" outputs "try an alternative approach"
     Then session "alpha" rejects a tool call
     And session "beta" permits a tool call
 
   Scenario: User activity in another OpenCode session does not reset a latch
-    Given OpenCode session "alpha" is latched
+    Given one OpenCode plugin instance handles sessions "alpha" and "beta"
+    And OpenCode session "alpha" is latched
     And OpenCode session "beta" is unlatched
     When the user sends a message in session "beta"
     Then session "alpha" remains latched
+
+  Scenario: User activity resets only its own OpenCode session
+    Given one OpenCode plugin instance handles sessions "alpha" and "beta"
+    And OpenCode session "alpha" is latched
+    And OpenCode session "beta" is latched
+    When the user sends a message in session "alpha"
+    Then session "alpha" permits a tool call
+    And session "beta" remains latched
+
+  Scenario: Deleting an OpenCode session removes its latch state
+    Given one OpenCode plugin instance handles session "alpha"
+    And OpenCode session "alpha" is latched
+    When OpenCode deletes session "alpha"
+    Then session "alpha" permits a tool call
 
   Scenario: OpenCode loads custom phrases from its environment
     Given "TINA_PHRASES" configures "stay with this plan"
